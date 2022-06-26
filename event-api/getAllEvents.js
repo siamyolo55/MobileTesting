@@ -35,13 +35,15 @@ let formatTouchInput = (curData) => {
         if(btn_touch && lines[i].indexOf('ABS_MT_POSITION_X') !== -1){
             for(let j = cords_start ; j < cords_start + 8 ; j++)
                 hexCordX += lines[i][j]
+                abs_mt_x = true
         }
         if(btn_touch && lines[i].indexOf('ABS_MT_POSITION_Y') !== -1){
             for(let j = cords_start ; j < cords_start + 8 ; j++)
                 hexCordY += lines[i][j]
+                abs_mt_y = true
         }
     }
-    if(btn_touch){
+    if(btn_touch && abs_mt_x && abs_mt_y){
         let cordX = parseInt(hexCordX, 16)
         let cordY = parseInt(hexCordY, 16)
         return {cordX, cordY}
