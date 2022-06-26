@@ -2,12 +2,16 @@ const wdio = require('webdriverio')
 const axios = require('axios')
 const fs = require('fs')
 const { DOMParser } = require('xmldom')
-const { count } = require('console')
 
 let cnt = {}
 let doc
 let screenHeight
 let screenWidth
+let eventBusHeight = 4095
+let eventBusWidth = 4095
+
+// the device used for texting has dimension of (4095x4095) in event bus
+// need to downscale this to current screenwidth/height (1080x1920) to get which element was pressed
 
 const opts = {
     path: '/wd/hub',
@@ -31,7 +35,6 @@ async function init() {
         //await driver.startRecordingScreen()
         let sessionId = await driver.sessionId
 
-        await driver.sleep
         //let searchBox = await driver.$(`//android.widget.EditText[@content-desc="Search here"]/android.widget.TextView`).click()
         //await driver.sendKeyEvent('Crimson Cup')
         //let record = await driver.stopRecordingScreen()
@@ -48,7 +51,6 @@ async function init() {
         
         console.log(screenWidth, screenHeight)
 
-
         // attempting to store bounds of all elements in the completeViewObject
         let completeViewObject = buildView(rootElement)
 
@@ -56,10 +58,7 @@ async function init() {
         // to check if tagTree is valid
         showView(completeViewObject)
 
-        
-
         //fs.writeFile('xmlData2.txt', source.data.value, (err) =>{ if(err) console.log(err) })
-
 
     }
     catch(e){
