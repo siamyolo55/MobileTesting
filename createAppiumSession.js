@@ -5,6 +5,9 @@ const { DOMParser } = require('xmldom')
 const { count } = require('console')
 
 let cnt = {}
+let doc
+let screenHeight
+let screenWidth
 
 const opts = {
     path: '/wd/hub',
@@ -14,10 +17,10 @@ const opts = {
         udid: "299edc22",
         platformVersion: "8.0.0",
         deviceName: "Galaxy S7",
-        //appPackage: "com.google.android.apps.maps",
-        appPackage: "com.google.android.apps.docs",
-        //appActivity: "com.google.android.maps.MapsActivity",
-        appActivity: "com.google.android.apps.docs.drive.startup.StartupActivity"
+        appPackage: "com.google.android.apps.maps",
+        //appPackage: "com.google.android.apps.docs",
+        appActivity: "com.google.android.maps.MapsActivity",
+        //appActivity: "com.google.android.apps.docs.drive.startup.StartupActivity"
     }
 }
 
@@ -33,17 +36,15 @@ async function init() {
         //await driver.sendKeyEvent('Crimson Cup')
         //let record = await driver.stopRecordingScreen()
         //console.log(record)
-        setTimeout(()=>{
-            console.log('ff')
-        },4000)
-        // try getting source 
+        // try getting view/page source 
         let source = await axios.get(`http://127.0.0.1:4723/wd/hub/session/${sessionId}/source`)
-        const doc = new DOMParser().parseFromString(source.data.value)
+        doc = new DOMParser().parseFromString(source.data.value)
         let rootElement = doc.getElementsByTagName('hierarchy')[0]
+        //let outerLayer  = doc.getElementsByTagName(outerLayerTagName)[0]
         //console.log(outerLayer.tagName)
         //console.log(rootElement.childNodes.length)
-        let screenWidth = rootElement.getAttribute('width')
-        let screenHeight = rootElement.getAttribute('height')
+        screenWidth = rootElement.getAttribute('width')
+        screenHeight = rootElement.getAttribute('height')
         
         console.log(screenWidth, screenHeight)
 
@@ -51,8 +52,10 @@ async function init() {
         // attempting to store bounds of all elements in the completeViewObject
         let completeViewObject = buildView(rootElement)
 
-        console.log(completeViewObject)
-        console.log(cnt)
+        //console.log(completeViewObject)
+        // to check if tagTree is valid
+        showView(completeViewObject)
+
         
 
         //fs.writeFile('xmlData2.txt', source.data.value, (err) =>{ if(err) console.log(err) })
@@ -74,22 +77,33 @@ let buildView = ( root ) => {
     if(cnt.hasOwnProperty(tagName))
         cnt[tagName] += 1
     else cnt[tagName] = 1
+    
+    // using cnt object to keep track of the current index of element while getting it with 'getElementsByTagName'
+    let curElement = doc.getElementsByTagName(tagName)[cnt[tagName] - 1]
+    let bounds = curElement.getAttribute('bounds') || null
 
     let viewObject = {
         tagName: tagName,
         cnt: cnt[tagName],
+        bounds: bounds,
         childs: []
     }
+
 
     let childs = root.childNodes
 
     for(let i = 0 ; i < childs.length ; i++){
         if(childs[i].tagName === undefined || childs[i].tagName === null) continue
-
         let childViewObject = buildView(childs[i])
         viewObject.childs.push(childViewObject)
-
     }
 
     return viewObject
+}
+
+let showView = (viewObject) => {
+    console.log(viewObject.tagName, viewObject.cnt, viewObject.bounds)
+    if(viewObject.childs.length)
+        for(let i = 0 ; i < viewObject.childs.length ; i++)
+            showView(viewObject.childs[i])
 }
