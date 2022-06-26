@@ -8,8 +8,8 @@ let getDeviceProperties = () => {
     const cmd = spawnSync("adb", ["shell", "getevent", "-li"])
     output = cmd.stdout.toString()
 
-    let x = ""
-    let y = ""
+    let pixelWidth = ""
+    let pixelHeight = ""
     let device
 
     let sections = output.split("input props:")
@@ -36,7 +36,7 @@ let getDeviceProperties = () => {
                 if(searchSection[i] == 'm' && searchSection[i+1] == 'a' && searchSection[i+2] == 'x'){
                     let j = i + 4
                     while(searchSection[j] !== ','){
-                        x += searchSection[j]
+                        pixelWidth += searchSection[j]
                         j++
                     }
                     break
@@ -51,7 +51,7 @@ let getDeviceProperties = () => {
                 if(searchSection[i] == 'm' && searchSection[i+1] == 'a' && searchSection[i+2] == 'x'){
                     let j = i + 4
                     while(searchSection[j] !== ','){
-                        y += searchSection[j]
+                        pixelHeight += searchSection[j]
                         j++
                     }
                     break
@@ -60,7 +60,7 @@ let getDeviceProperties = () => {
             }
         }
     }
-    return { x, y, device }
+    return { pixelWidth: parseInt(pixelWidth), pixelHeight: parseInt(pixelHeight), device }
 }
 
 module.exports = getDeviceProperties

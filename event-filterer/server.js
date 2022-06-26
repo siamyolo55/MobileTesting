@@ -1,4 +1,4 @@
 const getDeviceProperties = require('./findDeviceEventBus')
 
-let { x, y, device} = getDeviceProperties()
-console.log(x, y, device)
+// getting device name in eventbus and width & height of pixels
+let { pixelWidth, pixelHeight, device} = getDeviceProperties()
