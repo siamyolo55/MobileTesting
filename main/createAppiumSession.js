@@ -2,13 +2,12 @@ const wdio = require('webdriverio')
 const axios = require('axios')
 const fs = require('fs')
 const { DOMParser } = require('xmldom')
+//const buildView = require('./buildView')
 
-let cnt = {}
 let doc
 let screenHeight
 let screenWidth
-let eventBusHeight = 4095
-let eventBusWidth = 4095
+let cnt = {}
 
 // the device used for texting has dimension of (4095x4095) in event bus
 // need to downscale this to current screenwidth/height (1080x1920) to get which element was pressed
@@ -50,15 +49,17 @@ async function init() {
         screenHeight = rootElement.getAttribute('height')
         
         console.log(screenWidth, screenHeight)
-
+        let idx = 0 // to add index of elements in xpath
         // attempting to store bounds of all elements in the completeViewObject
-        let completeViewObject = buildView(rootElement)
+        let completeViewObject = buildView(rootElement, idx, '') // '/hierarchy' has 1 children
 
         //console.log(completeViewObject)
         // to check if tagTree is valid
-        showView(completeViewObject)
+        //showView(completeViewObject)
 
         //fs.writeFile('xmlData2.txt', source.data.value, (err) =>{ if(err) console.log(err) })
+
+        return completeViewObject
 
     }
     catch(e){
@@ -66,43 +67,63 @@ async function init() {
     }
 }
 
-init()
-
-// building recursive function to add all bounds to the view
-
-let buildView = ( root ) => {
+let buildView = ( root , idx, parentXpath ) => {
     let tagName = root.tagName
-
+    
     if(cnt.hasOwnProperty(tagName))
         cnt[tagName] += 1
     else cnt[tagName] = 1
     
+    let xpath
+    if(idx > 0)
+        xpath = `${parentXpath}/${tagName}[${idx}]`
+    else xpath = `${parentXpath}/${tagName}`
+    
     // using cnt object to keep track of the current index of element while getting it with 'getElementsByTagName'
     let curElement = doc.getElementsByTagName(tagName)[cnt[tagName] - 1]
+    // retrieve all attributes here for future
     let bounds = curElement.getAttribute('bounds') || null
+    let id = curElement.getAttribute('resource-id') || null
 
     let viewObject = {
         tagName: tagName,
         cnt: cnt[tagName],
         bounds: bounds,
+        xpath: xpath,
+        id: id,
         childs: []
     }
 
 
     let childs = root.childNodes
-
-    for(let i = 0 ; i < childs.length ; i++){
+    let childsLen = childs.length
+    // determine if the node has >1 valid childs
+    let validChildCount = 0
+    for(let i = 0 ; i < childsLen ; i++)
+        if(childs[i].tagName) validChildCount++
+    let cur = 0
+    for(let i = 0 ; i < childsLen ; i++){
         if(childs[i].tagName === undefined || childs[i].tagName === null) continue
-        let childViewObject = buildView(childs[i])
+        let childViewObject
+        cur++
+        if(validChildCount === 1)
+            childViewObject = buildView(childs[i], 0, xpath)
+        else childViewObject = buildView(childs[i], cur, xpath)
+        
         viewObject.childs.push(childViewObject)
     }
 
-    return viewObject
+    //let res = await axios.post()
+    //console.log(completeViewObject)
 }
 
 let showView = (viewObject) => {
-    console.log(viewObject.tagName, viewObject.cnt, viewObject.bounds)
+    //console.log(viewObject.cnt, viewObject.xpath)
     if(viewObject.childs.length)
         for(let i = 0 ; i < viewObject.childs.length ; i++)
             showView(viewObject.childs[i])
 }
+
+
+// calling the method
+init()
