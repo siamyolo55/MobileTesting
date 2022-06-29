@@ -10,9 +10,9 @@ const deviceWidth = 1080
 const deviceHeight = 1920
 
 const rescaledCords = (x, y) => {
-    let resclaedX = Math.ceil(x * (deviceWidth / pixelWidth))
-    let resclaedY = Math.ceil(y * (deviceHeight / pixelHeight))
-    return {resclaedX, resclaedY}
+    let rescaledX = Math.ceil(x * (deviceWidth / pixelWidth))
+    let rescaledY = Math.ceil(y * (deviceHeight / pixelHeight))
+    return {rescaledX, rescaledY}
 }
 
 module.exports = rescaledCords

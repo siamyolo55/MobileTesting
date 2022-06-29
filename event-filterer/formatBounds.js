@@ -9,11 +9,14 @@ let formatBounds = (bounds) => {
         else if(start && bounds[i] !== ',' && bounds[i] !== ']' && bounds[i] !== '[')
             cur += bounds[i]
         else if(start && (bounds[i] === ',' || bounds[i] === ']')){
-            numbers.push(cur)
+            numbers.push(parseInt(cur))
             cur = ""
         }
     }
     return numbers
 }
+
+//let ans = formatBounds('[520,173][159,369]')
+//console.log(ans)
 
 module.exports = formatBounds

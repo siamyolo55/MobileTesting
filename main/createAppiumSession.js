@@ -2,12 +2,7 @@ const wdio = require('webdriverio')
 const axios = require('axios')
 const fs = require('fs')
 const { DOMParser } = require('xmldom')
-//const buildView = require('./buildView')
 
-let doc
-let screenHeight
-let screenWidth
-let cnt = {}
 
 // the device used for texting has dimension of (4095x4095) in event bus
 // need to downscale this to current screenwidth/height (1080x1920) to get which element was pressed
@@ -27,103 +22,92 @@ const opts = {
     }
 }
 
-async function init() {
-    try{
-        const driver = await wdio.remote(opts)
-        //console.log(driver)
-        //await driver.startRecordingScreen()
-        let sessionId = await driver.sessionId
 
-        //let searchBox = await driver.$(`//android.widget.EditText[@content-desc="Search here"]/android.widget.TextView`).click()
-        //await driver.sendKeyEvent('Crimson Cup')
-        //let record = await driver.stopRecordingScreen()
-        //console.log(record)
-        // try getting view/page source 
-        let source = await axios.get(`http://127.0.0.1:4723/wd/hub/session/${sessionId}/source`)
-        doc = new DOMParser().parseFromString(source.data.value)
-        let rootElement = doc.getElementsByTagName('hierarchy')[0]
-        //let outerLayer  = doc.getElementsByTagName(outerLayerTagName)[0]
-        //console.log(outerLayer.tagName)
-        //console.log(rootElement.childNodes.length)
-        screenWidth = rootElement.getAttribute('width')
-        screenHeight = rootElement.getAttribute('height')
+class ViewGrid {
+
+    constructor(opts){
+        this.opts = opts
+        this.cnt = {}
+    }
+
+    async startAppiumSession(){
+        this.driver = await wdio.remote(this.opts)
+        this.sessionId = await this.driver.sessionId
+    }
+
+    async getCurrentPageDOM(){
+        this.source = await axios.get(`http://127.0.0.1:4723/wd/hub/session/${this.sessionId}/source`)
+        this.doc = new DOMParser().parseFromString(this.source.data.value)
+        this.rootElement = this.doc.getElementsByTagName('hierarchy')[0]
+        return this.doc
+    }
+
+    getScreenResolution(){
+        this.screenHeight = this.rootElement.getAttribute('height')
+        this.screenWidth = this.rootElement.getAttribute('width')
+        return {screenHeight: this.screenHeight, screenWidth: this.screenWidth}
+    }
+
+    buildView(root, idx, parentXpath){
+        let tagName = root.tagName
+    
+        if(this.cnt.hasOwnProperty(tagName))
+            this.cnt[tagName] += 1
+        else this.cnt[tagName] = 1
         
-        console.log(screenWidth, screenHeight)
-        let idx = 0 // to add index of elements in xpath
-        // attempting to store bounds of all elements in the completeViewObject
-        let completeViewObject = buildView(rootElement, idx, '') // '/hierarchy' has 1 children
-
-        //console.log(completeViewObject)
-        // to check if tagTree is valid
-        //showView(completeViewObject)
-
-        //fs.writeFile('xmlData2.txt', source.data.value, (err) =>{ if(err) console.log(err) })
-
-        return completeViewObject
-
-    }
-    catch(e){
-        console.log(e)
-    }
-}
-
-let buildView = ( root , idx, parentXpath ) => {
-    let tagName = root.tagName
-    
-    if(cnt.hasOwnProperty(tagName))
-        cnt[tagName] += 1
-    else cnt[tagName] = 1
-    
-    let xpath
-    if(idx > 0)
-        xpath = `${parentXpath}/${tagName}[${idx}]`
-    else xpath = `${parentXpath}/${tagName}`
-    
-    // using cnt object to keep track of the current index of element while getting it with 'getElementsByTagName'
-    let curElement = doc.getElementsByTagName(tagName)[cnt[tagName] - 1]
-    // retrieve all attributes here for future
-    let bounds = curElement.getAttribute('bounds') || null
-    let id = curElement.getAttribute('resource-id') || null
-
-    let viewObject = {
-        tagName: tagName,
-        cnt: cnt[tagName],
-        bounds: bounds,
-        xpath: xpath,
-        id: id,
-        childs: []
-    }
-
-
-    let childs = root.childNodes
-    let childsLen = childs.length
-    // determine if the node has >1 valid childs
-    let validChildCount = 0
-    for(let i = 0 ; i < childsLen ; i++)
-        if(childs[i].tagName) validChildCount++
-    let cur = 0
-    for(let i = 0 ; i < childsLen ; i++){
-        if(childs[i].tagName === undefined || childs[i].tagName === null) continue
-        let childViewObject
-        cur++
-        if(validChildCount === 1)
-            childViewObject = buildView(childs[i], 0, xpath)
-        else childViewObject = buildView(childs[i], cur, xpath)
+        let xpath
+        if(idx > 0)
+            xpath = `${parentXpath}/${tagName}[${idx}]`
+        else xpath = `${parentXpath}/${tagName}`
         
-        viewObject.childs.push(childViewObject)
+        // using cnt object to keep track of the current index of element while getting it with 'getElementsByTagName'
+        let curElement = this.doc.getElementsByTagName(tagName)[this.cnt[tagName] - 1]
+        // retrieve all attributes here for future
+        let bounds = curElement.getAttribute('bounds') || null
+        let id = curElement.getAttribute('resource-id') || null
+
+        let viewObject = {
+            tagName: tagName,
+            cnt: this.cnt[tagName],
+            bounds: bounds,
+            xpath: xpath,
+            id: id,
+            childs: []
+        }
+
+
+        let childs = root.childNodes
+        let childsLen = childs.length
+        // determine if the node has >1 valid childs
+        let validChildCount = 0
+        for(let i = 0 ; i < childsLen ; i++)
+            if(childs[i].tagName) validChildCount++
+        let cur = 0
+        for(let i = 0 ; i < childsLen ; i++){
+            if(childs[i].tagName === undefined || childs[i].tagName === null) continue
+            let childViewObject
+            cur++
+            if(validChildCount === 1)
+                childViewObject = this.buildView(childs[i], 0, xpath)
+            else childViewObject = this.buildView(childs[i], cur, xpath)
+            
+            viewObject.childs.push(childViewObject)
+        }
+
+        return viewObject
     }
 
-    //let res = await axios.post()
-    //console.log(completeViewObject)
 }
 
-let showView = (viewObject) => {
-    //console.log(viewObject.cnt, viewObject.xpath)
-    if(viewObject.childs.length)
-        for(let i = 0 ; i < viewObject.childs.length ; i++)
-            showView(viewObject.childs[i])
-}
+// let init  = async (opts) => {
+//     let viewGrid = new ViewGrid(opts)
+//     await viewGrid.startAppiumSession()
+//     let dom = await viewGrid.getCurrentPageDOM()
+//     let {screenHeight, screenWidth} = viewGrid.getScreenResolution()
+//     let completeViewObject = viewGrid.buildView(viewGrid.rootElement, 0, '')
+//     console.log(completeViewObject)
+// }
 
+//init(opts)
 
-// calling the method
-init()
+module.exports = ViewGrid
