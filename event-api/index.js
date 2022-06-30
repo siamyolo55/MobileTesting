@@ -4,6 +4,7 @@ const getDeviceProperties = require('../event-filterer/findDeviceEventBus')
 const formatTouchInput = require('./formatTouchInput')
 const { device } = getDeviceProperties()
 const { v4: uuidv4 } = require('uuid')
+const ViewGrid = require('../main/createAppiumSession')
 
 const postRoute = 'http://127.0.0.1:4001/getCordsTimestamps'
 
@@ -27,6 +28,8 @@ const getAllEvents = async (device) => {
     })
 }
 
-getAllEvents(device)
+//getAllEvents(device)
+
+module.exports = getAllEvents
 
 

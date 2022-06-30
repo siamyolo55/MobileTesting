@@ -12,6 +12,7 @@ const opts = {
         appPackage: "com.google.android.apps.maps",
         //appPackage: "com.google.android.apps.docs",
         appActivity: "com.google.android.maps.MapsActivity",
+        isHeadless: true
         //appActivity: "com.google.android.apps.docs.drive.startup.StartupActivity"
     }
 }
@@ -27,7 +28,3 @@ let getViewObject  = async (opts) => {
     // the function to find selected element, now we need to bring the (x,y) touched events here
     return completeViewObject
 }
-
-//getViewObject(opts)
-
-module.exports = getViewObject

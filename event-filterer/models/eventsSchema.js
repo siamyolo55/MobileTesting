@@ -1,14 +1,14 @@
 const mongoose = require('mongoose')
 
 const EventsSchema = new mongoose.Schema({
-    eventSessionId: String,
+    eventSessionId: {type: String},
     eventList: [
         {
-            type: String,
-            value: String,
-            timeStamp: String
+            rescaledX: Number,
+            rescaledY: Number
         }
     ]
 })
 
-module.exports = mongoose.model("mobile_events", EventsSchema)
+const Events = mongoose.model("mobile_events", EventsSchema)
+module.exports = Events;

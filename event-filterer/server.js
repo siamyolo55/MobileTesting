@@ -5,6 +5,8 @@ const rescaleCords = require('./rescaleCords')
 const mongoose = require('mongoose')
 const storeEvents = require('./db/storeEvents')
 
+const Events = require('./models/eventsSchema');
+
 const PORT = 4001
 
 const connectDb = () => {
@@ -34,8 +36,8 @@ app.post('/getCordsTimestamps', async (req, res) => {
     if(cordsTimestamps){
         let {cordX, cordY} = cordsTimestamps
         let {rescaledX, rescaledY} = rescaleCords(cordX, cordY)
-        console.log(rescaledX, rescaledY, id)
-        storeEvents({id, rescaledX, rescaledY})
+        //console.log(rescaledX, rescaledY, id)
+        await storeEvents({id, rescaledX, rescaledY})
     }
     else console.log('error getting data :(')
     res.status(201).json({message: 'got it bro'})
@@ -43,5 +45,16 @@ app.post('/getCordsTimestamps', async (req, res) => {
 
 
 app.listen(PORT, () => {
+    console.log('started server')
     connectDb()
+})
+
+app.get("/event/:id", async (req, res) => {
+    try {
+        const {id} = req.params;
+        let event = await Events.findOne({eventSessionId: id});
+        res.json(event)
+    } catch (error) {
+        res.json(error)
+    }
 })
