@@ -7,20 +7,20 @@ const { DOMParser } = require('xmldom')
 // the device used for texting has dimension of (4095x4095) in event bus
 // need to downscale this to current screenwidth/height (1080x1920) to get which element was pressed
 
-const opts = {
-    path: '/wd/hub',
-    port: 4723,
-    capabilities: {
-        platformName: "Android",
-        udid: "299edc22",
-        platformVersion: "8.0.0",
-        deviceName: "Galaxy S7",
-        appPackage: "com.google.android.apps.maps",
-        //appPackage: "com.google.android.apps.docs",
-        appActivity: "com.google.android.maps.MapsActivity",
-        //appActivity: "com.google.android.apps.docs.drive.startup.StartupActivity"
-    }
-}
+// const opts = {
+//     path: '/wd/hub',
+//     port: 4723,
+//     capabilities: {
+//         platformName: "Android",
+//         udid: "299edc22",
+//         platformVersion: "8.0.0",
+//         deviceName: "Galaxy S7",
+//         appPackage: "com.google.android.apps.maps",
+//         //appPackage: "com.google.android.apps.docs",
+//         appActivity: "com.google.android.maps.MapsActivity",
+//         //appActivity: "com.google.android.apps.docs.drive.startup.StartupActivity"
+//     }
+// }
 
 
 class ViewGrid {
@@ -64,14 +64,14 @@ class ViewGrid {
         let curElement = this.doc.getElementsByTagName(tagName)[this.cnt[tagName] - 1]
         // retrieve all attributes here for future
         let bounds = curElement.getAttribute('bounds') || null
-        let id = curElement.getAttribute('resource-id') || null
+        //let id = curElement.getAttribute('resource-id') || null
 
         let viewObject = {
             tagName: tagName,
             cnt: this.cnt[tagName],
             bounds: bounds,
             xpath: xpath,
-            id: id,
+            //id: id,
             childs: []
         }
 

@@ -12,6 +12,7 @@ let findTouchedElement = (viewObject, x, y) => {
 }
 
 let searchTouchedElement = (viewObject, touchedElement, x, y) => {
+    //console.log(viewObject)
     let bounds = formatBounds(viewObject.bounds)
 
     if(fits(bounds, x, y)){
@@ -24,7 +25,7 @@ let searchTouchedElement = (viewObject, touchedElement, x, y) => {
             touchedElement.value = viewObject.xpath
         }
         for(let i = 0 ; i < viewObject.childs.length ; i++){
-            searchTouchedElement(viewObject.childs[i])
+            searchTouchedElement(viewObject.childs[i], touchedElement, x, y)
         }
     }
 }

@@ -1,4 +1,5 @@
 let formatBounds = (bounds) => {
+    //console.log("====>>", bounds)
     let start = false
     let cur = ""
     let numbers = []
