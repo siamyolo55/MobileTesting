@@ -52,7 +52,7 @@ let replay = async (eventSessionId, opts) => {
     } 
 }
 
-let testId = "ceb84715-a661-40fb-8def-acfd8197f70a"
+let testId = "bea30620-3f5d-437a-a282-0f3c381f0945"
 
 replay(testId, opts)
 
