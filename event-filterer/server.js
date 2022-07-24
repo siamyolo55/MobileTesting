@@ -36,7 +36,7 @@ app.post('/getCordsTimestamps', async (req, res) => {
     if(cordsTimestamps){
         let {cordX, cordY} = cordsTimestamps
         let {rescaledX, rescaledY} = rescaleCords(cordX, cordY)
-        //console.log(rescaledX, rescaledY, id)
+        console.log(rescaledX, rescaledY, id)
         await storeEvents({id, rescaledX, rescaledY})
     }
     else console.log('error getting data :(')

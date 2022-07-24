@@ -9,13 +9,19 @@ const opts = {
     port: 4723,
     capabilities: {
         platformName: "Android",
-        udid: "299edc22",
-        platformVersion: "8.0.0",
-        deviceName: "Galaxy S7",
-        //appPackage: "com.google.android.apps.maps",
-        appPackage: "com.google.android.apps.docs",
-        //appActivity: "com.google.android.maps.MapsActivity",
-        appActivity: "com.google.android.apps.docs.drive.startup.StartupActivity"
+        //udid: "299edc22",
+        udid: "emulator-5554",
+        //udid: "KPSDU18928011624",
+        //platformVersion: "8.0.0",
+        platformVersion: "9",
+        deviceName: "Huawei",
+        appPackage: "com.google.android.apps.maps",
+        //appPackage: "com.google.android.apps.docs",
+        appActivity: "com.google.android.maps.MapsActivity",
+        autoGrantPermissions: true,
+        
+        //isHeadless: true
+        //appActivity: "com.google.android.apps.docs.drive.startup.StartupActivity"
     }
 }
 
@@ -24,6 +30,7 @@ const opts = {
 const magicFunction = async (opts, device) => {
     let viewGrid = new ViewGrid(opts)
     await viewGrid.startAppiumSession()
+    //console.log(viewGrid.getScreenResolution())
     await getAllEvents(device)
 }
 

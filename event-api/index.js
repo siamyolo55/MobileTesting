@@ -9,6 +9,8 @@ const ViewGrid = require('../main/createAppiumSession')
 const postRoute = 'http://127.0.0.1:4001/getCordsTimestamps'
 
 const getAllEvents = async (device) => {
+    console.log(device)
+    let cnt = 0
     const cmd = spawn('adb', ['exec-out', 'getevent', '-lt', device])
     //let time_start_idx = 4 // index from where timestamp starts
     let id = uuidv4()
@@ -17,6 +19,7 @@ const getAllEvents = async (device) => {
         let curData = data.toString()
         //console.log(curData)
         let cordsTime = formatTouchInput(curData)
+        console.log(cordsTime)
         if(cordsTime){
             let res = await axios.post(postRoute, {
                 cordsTime,

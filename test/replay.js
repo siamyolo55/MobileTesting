@@ -7,16 +7,22 @@ const opts = {
     port: 4723,
     capabilities: {
         platformName: "Android",
-        udid: "299edc22",
-        platformVersion: "8.0.0",
-        deviceName: "Galaxy S7",
-        //appPackage: "com.google.android.apps.maps",
-        appPackage: "com.google.android.apps.docs",
-        //appActivity: "com.google.android.maps.MapsActivity",
+        //udid: "299edc22",
+        udid: "emulator-5554",
+        //udid: "KPSDU18928011624",
+        //platformVersion: "8.0.0",
+        platformVersion: "9",
+        deviceName: "Huawei",
+        appPackage: "com.google.android.apps.maps",
+        //appPackage: "com.google.android.apps.docs",
+        appActivity: "com.google.android.maps.MapsActivity",
+        autoGrantPermissions: true,
+        
         //isHeadless: true
-        appActivity: "com.google.android.apps.docs.drive.startup.StartupActivity"
+        //appActivity: "com.google.android.apps.docs.drive.startup.StartupActivity"
     }
 }
+
 
 
         
@@ -30,6 +36,7 @@ let replay = async (eventSessionId, opts) => {
     let eventList = eventData.eventList
     for(let i = 0 ; i < eventList.length ; i++){
         let dom = await viewGrid.getCurrentPageDOM()
+        console.log(viewGrid.getScreenResolution())
         //console.log(viewGrid.rootElement)
         //let completeViewObject = viewGrid.buildView(viewGrid.rootElement, 0, '')
         let x = eventList[i].rescaledX
@@ -41,6 +48,9 @@ let replay = async (eventSessionId, opts) => {
         //await viewGrid.driver.$(`${element.value}`).click()
         //setTimeout(() => {}, 3000)
         try{
+            console.log('waiting 2 secs')
+            await new Promise(r => setTimeout(r, 2000));
+            console.log('waited 2 secs')
             await viewGrid.driver.touchPerform([
                 { action: 'tap', options: { x, y } }
             ])
@@ -52,7 +62,7 @@ let replay = async (eventSessionId, opts) => {
     } 
 }
 
-let testId = "bea30620-3f5d-437a-a282-0f3c381f0945"
+let testId = "34e9b314-417f-4078-851a-745812e9fd85"
 
 replay(testId, opts)
 
