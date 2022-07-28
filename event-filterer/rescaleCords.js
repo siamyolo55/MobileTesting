@@ -10,6 +10,8 @@ const deviceWidth = 1080
 const deviceHeight = 2280
 
 const rescaledCords = (x, y) => {
+    //console.log(x, y, 'inside rescale cords')
+    //console.log(pixelHeight, pixelWidth, 'pixel height width')
     let rescaledX = Math.ceil(x * (deviceWidth / pixelWidth))
     let rescaledY = Math.ceil(y * (deviceHeight / pixelHeight))
     return {rescaledX, rescaledY}

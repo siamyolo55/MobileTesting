@@ -5,7 +5,8 @@ const EventsSchema = new mongoose.Schema({
     eventList: [
         {
             rescaledX: Number,
-            rescaledY: Number
+            rescaledY: Number,
+            xpath: String
         }
     ]
 })

@@ -3,7 +3,13 @@ const axios = require('axios')
 const fs = require('fs')
 const { DOMParser } = require('xmldom')
 const XPath = require('xpath')
-
+const getDeviceProperties = require('../event-filterer/findDeviceEventBus')
+const { device } = getDeviceProperties()
+const { spawn } = require('child_process')
+const formatTouchInput = require('../event-api/formatTouchInput')
+const findTouchedElement = require('../event-filterer/findTouchedElement')
+const { v4: uuidv4 } = require('uuid')
+const rescaledCords = require('../event-filterer/rescaleCords')
 
 // the device used for texting has dimension of (4095x4095) in event bus
 // need to downscale this to current screenwidth/height (1080x1920) to get which element was pressed
@@ -23,11 +29,13 @@ const opts = {
         //appPackage: "com.google.android.apps.docs",
         appActivity: "com.google.android.maps.MapsActivity",
         autoGrantPermissions: true,
-        
+        systemPort: "8201"
         //isHeadless: true
         //appActivity: "com.google.android.apps.docs.drive.startup.StartupActivity"
     }
 }
+
+const postRoute = 'http://127.0.0.1:4001/getCordsTimestamps'
 
 // optimal xpath generator from appium-inspector
 
@@ -164,17 +172,63 @@ class ViewGrid {
         return viewObject
     }
 
+    // modification of getAllEvents()
+    async recordEvents(device){
+        // attempting to group together everything
+        const cmd = spawn('adb', ['exec-out', 'getevent', '-lt', device])
+        await this.startAppiumSession()
+        let curDom = await this.getCurrentPageDOM()
+        let completeViewObject = this.buildView(this.rootElement, 0, '')
+        console.log(device)
+        let cnt = 0
+        //let time_start_idx = 4 // index from where timestamp starts
+        let id = uuidv4()
+        cmd.stdout.on('data', async (data) => {
+            //console.log(++cnt)
+            try{
+              let curData = data.toString()
+              //console.log(curData)
+              let cordsTime = formatTouchInput(curData)
+              //console.log(cordsTime, 'lololo')
+                if(cordsTime){
+                    let {rescaledX, rescaledY} = rescaledCords(cordsTime.cordX, cordsTime.cordY)
+                    console.log(rescaledX, rescaledY, 'after rescaling')
+                    //let x = rescaledX * (1977 / 2280)
+                    //let y = rescaledY
+                    let touchedElement = findTouchedElement(completeViewObject, rescaledX, rescaledY)
+                    //console.log(cordsTime)
+                    console.log(touchedElement)
+                    if(cordsTime){
+                        let res = await axios.post(postRoute, {
+                            cordsTime,
+                            id: id,
+                            xpath: touchedElement.value
+                        })
+                        if(res.status === 201){
+                            console.log(res.data.message)
+                            curDom = await this.getCurrentPageDOM()
+                            completeViewObject = this.buildView(this.rootElement, 0, '')
+                        }
+                    }
+                }
+            }
+            catch(err){
+              //console.log('erroed here')
+            }
+        })
+    }
+
 }
 
-let init  = async (opts) => {
-    let viewGrid = new ViewGrid(opts)
-    await viewGrid.startAppiumSession()
-    let dom = await viewGrid.getCurrentPageDOM()
-    //let {screenHeight, screenWidth} = viewGrid.getScreenResolution()
-    let completeViewObject = viewGrid.buildView(viewGrid.rootElement, 0, '')
-    console.log(completeViewObject)
-}
+// const init  = async (opts) => {
+//     let viewGrid = new ViewGrid(opts)
+//     await viewGrid.startAppiumSession()
+//     let dom = await viewGrid.getCurrentPageDOM()
+//     //let {screenHeight, screenWidth} = viewGrid.getScreenResolution()
+//     let completeViewObject = viewGrid.buildView(viewGrid.rootElement, 0, '')
+//     console.log(completeViewObject)
+// }
 
-init(opts)
+// init(opts)
 
 module.exports = ViewGrid

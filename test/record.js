@@ -1,6 +1,8 @@
 const ViewGrid = require('../main/createAppiumSession')
 const getDeviceProperties = require('../event-filterer/findDeviceEventBus')
-const getAllEvents = require('../event-api/index')
+//const getAllEvents = require('../event-api/index')
+const process = require('process')
+const axios = require('axios')
 
 const { device } = getDeviceProperties()
 
@@ -15,11 +17,14 @@ const opts = {
         //platformVersion: "8.0.0",
         platformVersion: "9",
         deviceName: "Huawei",
-        appPackage: "com.google.android.apps.maps",
+        //appPackage: "com.google.android.apps.maps",
+        appPackage: 'com.android.calculator2',
+        appActivity: 'com.android.calculator2.Calculator',
         //appPackage: "com.google.android.apps.docs",
-        appActivity: "com.google.android.maps.MapsActivity",
+        //appActivity: "com.google.android.maps.MapsActivity",
         autoGrantPermissions: true,
-        
+        systemPort: "8201",
+        newCommandTimeout: 300
         //isHeadless: true
         //appActivity: "com.google.android.apps.docs.drive.startup.StartupActivity"
     }
@@ -29,9 +34,9 @@ const opts = {
 
 const magicFunction = async (opts, device) => {
     let viewGrid = new ViewGrid(opts)
-    await viewGrid.startAppiumSession()
+    //await viewGrid.startAppiumSession()
     //console.log(viewGrid.getScreenResolution())
-    await getAllEvents(device)
+    await viewGrid.recordEvents(device)
 }
 
 let startRecording = async () => {

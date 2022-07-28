@@ -5,14 +5,18 @@ const formatBounds = require('./formatBounds')
 // instead completeViewObject represents the first child of the original completeViewObject
 
 let findTouchedElement = (viewObject, x, y) => {
-
+    //console.log(x, y, 'x,y')
     let touchedElement ={}
     searchTouchedElement(viewObject, touchedElement, x, y)
     return touchedElement
 }
 
 let searchTouchedElement = (viewObject, touchedElement, x, y) => {
-    //console.log(viewObject)
+    if(viewObject.tagName === 'hierarchy'){
+        searchTouchedElement(viewObject.childs[0], touchedElement, x, y)
+        return
+    }
+    //console.log(viewObject.bounds)
     let bounds = formatBounds(viewObject.bounds)
 
     if(fits(bounds, x, y)){

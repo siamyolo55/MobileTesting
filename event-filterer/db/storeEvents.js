@@ -7,7 +7,7 @@ const storeEvents = async (eventData) => {
         let event = await EventsSchema.findOne({eventSessionId: eventData.id})
         if(event){
             console.log('storing in existing one')
-            event.eventList.push({rescaledX: eventData.rescaledX, rescaledY: eventData.rescaledY})
+            event.eventList.push({rescaledX: eventData.rescaledX, rescaledY: eventData.rescaledY, xpath: eventData.xpath})
             await event.save()
         }
         else{
@@ -16,7 +16,7 @@ const storeEvents = async (eventData) => {
                 eventSessionId: eventData.id,
                 eventList: []
             })
-            event.eventList.push({rescaledX: eventData.rescaledX, rescaledY: eventData.rescaledY})
+            event.eventList.push({rescaledX: eventData.rescaledX, rescaledY: eventData.rescaledY, xpath: eventData.xpath})
             await event.save()
         }
         console.log('saved')

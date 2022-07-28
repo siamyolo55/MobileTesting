@@ -33,11 +33,12 @@ app.post('/getCordsTimestamps', async (req, res) => {
     let output = req.body
     let cordsTimestamps = output.cordsTime
     let id = output.id
+    let xpath = output.xpath
     if(cordsTimestamps){
         let {cordX, cordY} = cordsTimestamps
         let {rescaledX, rescaledY} = rescaleCords(cordX, cordY)
-        console.log(rescaledX, rescaledY, id)
-        await storeEvents({id, rescaledX, rescaledY})
+        console.log(rescaledX, rescaledY, id, xpath)
+        await storeEvents({id, rescaledX, rescaledY, xpath})
     }
     else console.log('error getting data :(')
     res.status(201).json({message: 'got it bro'})

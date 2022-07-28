@@ -13,11 +13,14 @@ const opts = {
         //platformVersion: "8.0.0",
         platformVersion: "9",
         deviceName: "Huawei",
-        appPackage: "com.google.android.apps.maps",
+        //appPackage: "com.google.android.apps.maps",
+        appPackage: 'com.android.calculator2',
+        appActivity: 'com.android.calculator2.Calculator',
         //appPackage: "com.google.android.apps.docs",
-        appActivity: "com.google.android.maps.MapsActivity",
+        //appActivity: "com.google.android.maps.MapsActivity",
         autoGrantPermissions: true,
-        
+        systemPort: "8201",
+        newCommandTimeout: 300
         //isHeadless: true
         //appActivity: "com.google.android.apps.docs.drive.startup.StartupActivity"
     }
@@ -55,6 +58,8 @@ let replay = async (eventSessionId, opts) => {
                 { action: 'tap', options: { x, y } }
             ])
             console.log('done')
+            // await viewGrid.driver.$(`${eventList[i].xpath}`).click()
+            // console.log('done')
         }
         catch(err){
             console.log(err)
@@ -62,7 +67,7 @@ let replay = async (eventSessionId, opts) => {
     } 
 }
 
-let testId = "34e9b314-417f-4078-851a-745812e9fd85"
+let testId = "8fcfe137-3cd6-4c3e-9310-303a13079b60"
 
 replay(testId, opts)
 
