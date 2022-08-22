@@ -15,23 +15,24 @@ const getAllEvents = async (device) => {
     //let time_start_idx = 4 // index from where timestamp starts
     let id = uuidv4()
     cmd.stdout.on('data', async (data) => {
-        //console.log(++cnt)
+        console.log('###############################', cnt)
         let curData = data.toString()
-        //console.log(curData)
-        let cordsTime = formatTouchInput(curData)
-        console.log(cordsTime)
-        if(cordsTime){
-            let res = await axios.post(postRoute, {
-                cordsTime,
-                id: id
-            })
-            if(res.status === 201)
-                console.log(res.data.message)
-        }
+        console.log(curData)
+        console.log('###############################', cnt++)
+        // let cordsTime = formatTouchInput(curData)
+        // console.log(cordsTime)
+        // if(cordsTime){
+        //     let res = await axios.post(postRoute, {
+        //         cordsTime,
+        //         id: id
+        //     })
+        //     if(res.status === 201)
+        //         console.log(res.data.message)
+        // }
     })
 }
 
-//getAllEvents(device)
+getAllEvents(device)
 
 module.exports = getAllEvents
 

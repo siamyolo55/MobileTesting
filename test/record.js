@@ -1,10 +1,8 @@
 const ViewGrid = require('../main/createAppiumSession')
 const getDeviceProperties = require('../event-filterer/findDeviceEventBus')
 //const getAllEvents = require('../event-api/index')
-const process = require('process')
-const axios = require('axios')
-
-const { device } = getDeviceProperties()
+//const axios = require('axios')
+//const exitHook = require('exit-hook')
 
 const opts = {
     path: '/wd/hub',
@@ -32,15 +30,29 @@ const opts = {
 
 
 
-const magicFunction = async (opts, device) => {
+const magicFunction = async (opts) => {
     let viewGrid = new ViewGrid(opts)
+    viewGrid.startAppiumServer()
+    viewGrid.startAndroidEmulator()
+    await new Promise(r => setTimeout(r, 5000))
+    const { device, pixelHeight, pixelWidth } = getDeviceProperties()
+    console.log(pixelHeight, pixelWidth)
+
     //await viewGrid.startAppiumSession()
     //console.log(viewGrid.getScreenResolution())
     await viewGrid.recordEvents(device)
 }
 
 let startRecording = async () => {
-    await magicFunction(opts, device)
+    await magicFunction(opts)
 }
 
 startRecording()
+
+// process.on('exit', (code) => {
+//     console.log(`Explicit exit with code ${code}`)
+// })
+
+// exitHook(() => {
+//     console.log('exiting')
+// })

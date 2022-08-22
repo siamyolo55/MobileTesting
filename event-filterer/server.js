@@ -4,7 +4,8 @@ const rescaleCords = require('./rescaleCords')
 //const getViewObject = require('../main/baseScript')
 const mongoose = require('mongoose')
 const storeEvents = require('./db/storeEvents')
-
+const { createServer } = require('http')
+const { Server } = require('socket.io')
 const Events = require('./models/eventsSchema');
 
 const PORT = 4001
@@ -29,27 +30,20 @@ app.use(cors({ origin: "*" }))
 app.use(express.json({extended : true}))
 
 // temporary routes
-app.post('/getCordsTimestamps', async (req, res) => {
-    let output = req.body
-    let cordsTimestamps = output.cordsTime
-    let id = output.id
-    let xpath = output.xpath
-    if(cordsTimestamps){
-        let {cordX, cordY} = cordsTimestamps
-        let {rescaledX, rescaledY} = rescaleCords(cordX, cordY)
-        console.log(rescaledX, rescaledY, id, xpath)
-        await storeEvents({id, rescaledX, rescaledY, xpath})
-    }
-    else console.log('error getting data :(')
-    res.status(201).json({message: 'got it bro'})
-})
-
-
-app.listen(PORT, () => {
-    console.log('started server')
-    connectDb()
-})
-
+// app.post('/getCordsTimestamps', async (req, res) => {
+//     let output = req.body
+//     let cordsTimestamps = output.cordsTime
+//     let id = output.id
+//     let xpath = output.xpath
+//     if(cordsTimestamps){
+//         let {cordX, cordY} = cordsTimestamps
+//         let {rescaledX, rescaledY} = rescaleCords(cordX, cordY)
+//         console.log(rescaledX, rescaledY, id, xpath)
+//         await storeEvents({id, rescaledX, rescaledY, xpath})
+//     }
+//     else console.log('error getting data :(')
+//     res.status(201).json({message: 'got it bro'})
+// })
 app.get("/event/:id", async (req, res) => {
     try {
         const {id} = req.params;
@@ -59,3 +53,34 @@ app.get("/event/:id", async (req, res) => {
         res.json(error)
     }
 })
+
+const httpServer = createServer(app)
+const io = new Server(httpServer, {});
+
+io.on('connection', (socket) =>{
+    console.log(`started socket with id : ${socket.id}`)
+    socket.on('touchData', async (data) => {
+        let {cordsTime, id, xpath} = data
+        let cordsTimestamps = cordsTime
+        if(cordsTimestamps){
+            let {cordX, cordY} = cordsTimestamps
+            let {rescaledX, rescaledY} = rescaleCords(cordX, cordY)
+            console.log(rescaledX, rescaledY, id, xpath)
+            await storeEvents({id, rescaledX, rescaledY, xpath})
+        }
+        else console.log('error getting data :(')
+    })
+})
+
+
+
+httpServer.listen(PORT, () => {
+    console.log('started server')
+    connectDb()
+})
+
+
+// app.listen(PORT, () => {
+//     console.log('started server')
+//     
+// })

@@ -63,7 +63,7 @@ let getDeviceProperties = () => {
     return { pixelWidth: parseInt(pixelWidth), pixelHeight: parseInt(pixelHeight), device }
 }
 
-console.log(getDeviceProperties())
+//console.log(getDeviceProperties())
 
 module.exports = getDeviceProperties
 

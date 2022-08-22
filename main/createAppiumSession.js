@@ -1,15 +1,16 @@
 const wdio = require('webdriverio')
 const axios = require('axios')
-const fs = require('fs')
+//const fs = require('fs')
 const { DOMParser } = require('xmldom')
 const XPath = require('xpath')
 const getDeviceProperties = require('../event-filterer/findDeviceEventBus')
-const { device } = getDeviceProperties()
-const { spawn } = require('child_process')
+//const { device } = getDeviceProperties()
+const { spawn, exec } = require('child_process')
 const formatTouchInput = require('../event-api/formatTouchInput')
 const findTouchedElement = require('../event-filterer/findTouchedElement')
 const { v4: uuidv4 } = require('uuid')
 const rescaledCords = require('../event-filterer/rescaleCords')
+const { io } = require('socket.io-client')
 
 // the device used for texting has dimension of (4095x4095) in event bus
 // need to downscale this to current screenwidth/height (1080x1920) to get which element was pressed
@@ -39,7 +40,7 @@ const postRoute = 'http://127.0.0.1:4001/getCordsTimestamps'
 
 // optimal xpath generator from appium-inspector
 
-function getOptimalXPath (doc, domNode, uniqueAttributes = ['id']) {
+function getOptimalXPath (doc, domNode, uniqueAttributes = ['id', 'content-desc']) {
   try {
     // BASE CASE #1: If this isn't an element, we're above the root, return empty string
     if (!domNode.tagName || domNode.nodeType !== 1) {
@@ -102,6 +103,25 @@ class ViewGrid {
     constructor(opts){
         this.opts = opts
         this.cnt = {}
+    }
+
+    // later on automate the process of starting the appium server
+    startAppiumServer(){
+        exec('appium -a 127.0.0.1 -p 4723', (error, stdout, stderr) => {
+            if(error){
+                console.log(`exec error on appium`)
+                return
+            }
+        })
+    }
+
+    startAndroidEmulator(){
+        exec('C:/Users/abrar/AppData/Local/Android/sdk/emulator/emulator -avd pixel_9.0', (error, stdout, stderr) => {
+            if(error){
+                console.log(`exec error starting emulator`)
+                return
+            }
+        })
     }
 
     async startAppiumSession(){
@@ -174,6 +194,7 @@ class ViewGrid {
 
     // modification of getAllEvents()
     async recordEvents(device){
+        const socket = io('http://localhost:4001')
         // attempting to group together everything
         const cmd = spawn('adb', ['exec-out', 'getevent', '-lt', device])
         await this.startAppiumSession()
@@ -189,32 +210,29 @@ class ViewGrid {
               let curData = data.toString()
               //console.log(curData)
               let cordsTime = formatTouchInput(curData)
-              //console.log(cordsTime, 'lololo')
-                if(cordsTime){
-                    let {rescaledX, rescaledY} = rescaledCords(cordsTime.cordX, cordsTime.cordY)
-                    console.log(rescaledX, rescaledY, 'after rescaling')
-                    //let x = rescaledX * (1977 / 2280)
-                    //let y = rescaledY
-                    let touchedElement = findTouchedElement(completeViewObject, rescaledX, rescaledY)
-                    //console.log(cordsTime)
-                    console.log(touchedElement)
-                    if(cordsTime){
-                        let res = await axios.post(postRoute, {
-                            cordsTime,
-                            id: id,
-                            xpath: touchedElement.value
-                        })
-                        if(res.status === 201){
-                            console.log(res.data.message)
-                            curDom = await this.getCurrentPageDOM()
-                            completeViewObject = this.buildView(this.rootElement, 0, '')
-                        }
-                    }
-                }
+              console.log(cordsTime)
+              if(cordsTime){
+                  let {rescaledX, rescaledY} = rescaledCords(cordsTime.cordX, cordsTime.cordY)
+                  console.log(rescaledX, rescaledY, 'after rescaling')
+                  //let x = rescaledX * (1977 / 2280)
+                  //let y = rescaledY
+                  let touchedElement = findTouchedElement(completeViewObject, rescaledX, rescaledY)
+                  //console.log(cordsTime)
+                  console.log(touchedElement)
+                  let data = {
+                      cordsTime,
+                      id,
+                      xpath: touchedElement.value
+                  }
+                  socket.emit('touchData', data)
+              }
             }
             catch(err){
               //console.log('erroed here')
             }
+        })
+        socket.on('connection', () => {
+            console.log(`conneted to ${socket.id}`)
         })
     }
 
