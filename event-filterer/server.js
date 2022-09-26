@@ -12,9 +12,11 @@ const PORT = 4001
 
 const connectDb = () => {
     try{
-        mongoose.connect('mongodb://localhost:27017/mobile_events', {
+        mongoose.connect('mongodb://127.0.0.1:27017/mobile_events', {
             useNewUrlParser: true,
             useUnifiedTopology: true
+        }).then(() => {
+            console.log('db connected')
         })
     }
     catch(err){
@@ -66,7 +68,7 @@ io.on('connection', (socket) =>{
             let {cordX, cordY} = cordsTimestamps
             let {rescaledX, rescaledY} = rescaleCords(cordX, cordY)
             console.log(rescaledX, rescaledY, id, xpath)
-            await storeEvents({id, rescaledX, rescaledY, xpath})
+            //await storeEvents({id, rescaledX, rescaledY, xpath})
         }
         else console.log('error getting data :(')
     })

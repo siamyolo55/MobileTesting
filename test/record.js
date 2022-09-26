@@ -3,10 +3,11 @@ const getDeviceProperties = require('../event-filterer/findDeviceEventBus')
 //const getAllEvents = require('../event-api/index')
 //const axios = require('axios')
 //const exitHook = require('exit-hook')
+require('dotenv').config()
 
 const opts = {
-    path: '/wd/hub',
-    port: 4723,
+    path: process.env.APPIUM_SERVER_PATH,
+    port: parseInt(process.env.APPIUM_SERVER_PORT),
     capabilities: {
         platformName: "Android",
         //udid: "299edc22",
@@ -22,8 +23,9 @@ const opts = {
         //appActivity: "com.google.android.maps.MapsActivity",
         autoGrantPermissions: true,
         systemPort: "8201",
-        newCommandTimeout: 300
-        //isHeadless: true
+        newCommandTimeout: 300,
+        avd: "pixel_9.0",
+        // isHeadless: true
         //appActivity: "com.google.android.apps.docs.drive.startup.StartupActivity"
     }
 }
@@ -32,12 +34,13 @@ const opts = {
 
 const magicFunction = async (opts) => {
     let viewGrid = new ViewGrid(opts)
-    viewGrid.startAppiumServer()
-    viewGrid.startAndroidEmulator()
+    await viewGrid.startAppiumServer()
     await new Promise(r => setTimeout(r, 5000))
+    await viewGrid.startAppiumSession()
+    //viewGrid.startAndroidEmulator()
     const { device, pixelHeight, pixelWidth } = getDeviceProperties()
-    console.log(pixelHeight, pixelWidth)
-
+    console.log(pixelHeight, pixelWidth, " here")
+    
     //await viewGrid.startAppiumSession()
     //console.log(viewGrid.getScreenResolution())
     await viewGrid.recordEvents(device)

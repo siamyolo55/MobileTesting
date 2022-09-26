@@ -4,15 +4,26 @@
   "description": "",
   "main": "magicFunction.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "nodemon scrcpy-test.js"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
     "axios": "^0.27.2",
+    "dotenv": "^16.0.2",
     "exit-hook": "^3.0.0",
+    "h264-converter": "^0.1.4",
     "mongoose": "^6.4.1",
+    "scrcpy-client": "^0.1.2",
+    "socket.io": "^4.5.1",
+    "socket.io-client": "^4.5.1",
+    "ts-h264-live-player": "^1.0.0-beta.4",
+    "websocket": "^1.0.34",
     "xpath": "^0.0.32"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.19"
   }
 }

@@ -11,13 +11,23 @@ const findTouchedElement = require('../event-filterer/findTouchedElement')
 const { v4: uuidv4 } = require('uuid')
 const rescaledCords = require('../event-filterer/rescaleCords')
 const { io } = require('socket.io-client')
+require('dotenv').config()
 
 // the device used for texting has dimension of (4095x4095) in event bus
 // need to downscale this to current screenwidth/height (1080x1920) to get which element was pressed
 
+
+// Don't need to start emulator from commands since we can simply pass the avd name in desired capabilities
+
+// const emulatorPath = {
+//     windows: 'C:/Users/abrar/AppData/Local/Android/sdk/emulator/emulator -avd pixel_9.0',
+//     linux: 'emulator -avd pixel_9.0'
+// }
+
+
 const opts = {
     path: '/wd/hub',
-    port: 4723,
+    port: parseInt(process.env.APPIUM_SERVER_PORT),
     capabilities: {
         platformName: "Android",
         //udid: "299edc22",
@@ -30,7 +40,8 @@ const opts = {
         //appPackage: "com.google.android.apps.docs",
         appActivity: "com.google.android.maps.MapsActivity",
         autoGrantPermissions: true,
-        systemPort: "8201"
+        systemPort: "8201",
+        avd: "pixel_9.0"
         //isHeadless: true
         //appActivity: "com.google.android.apps.docs.drive.startup.StartupActivity"
     }
@@ -106,8 +117,9 @@ class ViewGrid {
     }
 
     // later on automate the process of starting the appium server
-    startAppiumServer(){
-        exec('appium -a 127.0.0.1 -p 4723', (error, stdout, stderr) => {
+    async startAppiumServer(){
+        const APPIUM_SERVER_START_COMMAND = `appium -a ${process.env.APPIUM_SERVER_HOST} -p ${process.env.APPIUM_SERVER_PORT}`
+        exec(APPIUM_SERVER_START_COMMAND, async (error, stdout, stderr) => {
             if(error){
                 console.log(`exec error on appium`)
                 return
@@ -115,14 +127,16 @@ class ViewGrid {
         })
     }
 
-    startAndroidEmulator(){
-        exec('C:/Users/abrar/AppData/Local/Android/sdk/emulator/emulator -avd pixel_9.0', (error, stdout, stderr) => {
-            if(error){
-                console.log(`exec error starting emulator`)
-                return
-            }
-        })
-    }
+    // starting emulator from appium desired capabilities
+
+    // startAndroidEmulator(){
+    //     exec(emulatorPath.linux , (error, stdout, stderr) => {
+    //         if(error){
+    //             console.log(`exec error starting emulator`)
+    //             return
+    //         }
+    //     })
+    // }
 
     async startAppiumSession(){
         this.driver = await wdio.remote(this.opts)
@@ -194,10 +208,10 @@ class ViewGrid {
 
     // modification of getAllEvents()
     async recordEvents(device){
+        //await this.startAppiumSession()
         const socket = io('http://localhost:4001')
         // attempting to group together everything
         const cmd = spawn('adb', ['exec-out', 'getevent', '-lt', device])
-        await this.startAppiumSession()
         let curDom = await this.getCurrentPageDOM()
         let completeViewObject = this.buildView(this.rootElement, 0, '')
         console.log(device)
